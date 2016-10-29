@@ -1,0 +1,46 @@
+Metrics/AbcSize:
+  Max: 55
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 30
+
+Metrics/PerceivedComplexity:
+  Max: 15
+
+Style/BlockComments:
+  Exclude:
+    - 'spec/spec_helper.rb'
+
+Style/CaseEquality:
+  Exclude:
+    - 'lib/provider_dsl/record.rb'
+    - 'lib/provider_dsl/zone.rb'
+
+Style/Documentation:
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+    - 'lib/provider_dsl/gandi_proxy.rb'
+
+Style/GuardClause:
+  Exclude:
+    - 'lib/provider_dsl/zone.rb'
+
+Style/MethodMissing:
+  Exclude:
+    - 'lib/provider_dsl/gandi_proxy.rb'
+
+Style/TrivialAccessors:
+  Exclude:
+    - 'lib/provider_dsl/zone.rb'
+
+Style/MethodMissing:
+  Exclude:
+    - 'lib/provider_dsl/gandi_proxy.rb'
+    - 'spec/provider_dsl/mocks/gandi_session.rb'

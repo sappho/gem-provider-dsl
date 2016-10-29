@@ -1,0 +1,6 @@
+.idea
+Gemfile.lock
+pkg
+projectFilesBackup
+.rubocop_todo.yml
+test
