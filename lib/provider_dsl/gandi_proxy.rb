@@ -10,8 +10,9 @@ module ProviderDSL
 
     def method_missing(method, *arguments)
       result = super(method, *arguments)
-      return result unless ::Gandi::VALID_METHODS.include?(chained.join('.'))
-      Log.instance.debug((["-> Gandi #{method}"] + [*arguments]).join("\n  "))
+      method_name = chained.join('.')
+      return result unless ::Gandi::VALID_METHODS.include?(method_name)
+      Log.instance.debug((["-> Gandi #{method_name}"] + [*arguments]).join("\n  "))
       Log.instance.debug("Result:\n#{result}")
       LIMITER.wait
       result
