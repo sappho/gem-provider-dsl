@@ -2,8 +2,6 @@ require 'rake'
 require 'rspec/core/rake_task'
 require 'bundler/gem_tasks'
 
-ENV['gem_push'] = 'off'
-
 task default: [:rubocop_dev, :spec]
 task ci: [:rubocop, :spec]
 

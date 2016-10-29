@@ -4,7 +4,7 @@ require 'provider_dsl/zone'
 require 'provider_dsl/log'
 
 module ProviderDSL
-  #
+  # Gandi session factory
   class GandiSessionFactory
     def instance(api_key, environment)
       ::Gandi::Session.new(api_key, env: environment)

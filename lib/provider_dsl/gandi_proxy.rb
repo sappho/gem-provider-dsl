@@ -12,7 +12,7 @@ module ProviderDSL
       result = super(method, *arguments)
       return result unless ::Gandi::VALID_METHODS.include?(chained.join('.'))
       Log.instance.debug((["-> Gandi #{method}"] + [*arguments]).join("\n  "))
-      Log.instance.debug("Result:\n#{result.to_yaml}")
+      Log.instance.debug("Result:\n#{result}")
       LIMITER.wait
       result
     end
