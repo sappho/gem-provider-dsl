@@ -18,5 +18,7 @@ Gem::Specification.new do |specification|
   specification.add_development_dependency 'rspec-mocks', '~> 3.5'
   specification.add_dependency 'ipaddress', '~> 0.8.3'
   specification.add_dependency 'gandi', '~> 3.3', '>= 3.3.27'
+  specification.add_dependency 'gcloud', '~> 0.21.0'
+  specification.add_dependency 'google-cloud-error_reporting', '~> 0.21.0'
   specification.add_dependency 'map', '~> 6.6'
 end

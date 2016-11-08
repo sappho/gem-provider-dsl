@@ -9,14 +9,12 @@ module ProviderDSL
 
     def initialize(original_records, parameters = {})
       @logger = Log.instance
-      @original_records = original_records.map do |record|
-        if record.is_a?(Hash)
-          Record.new(record['name'], record['type'], record['value'], record['ttl'])
-        else
-          record
-        end
+      @original_records = []
+      @records = []
+      original_records.each do |record|
+        @original_records = add(@original_records, record)
+        @records = add(@records, record) if parameters[:inherit_records]
       end
-      @records = parameters[:inherit_records] ? @original_records.clone : []
       @names = []
       name
       ttl
@@ -43,26 +41,15 @@ module ProviderDSL
     end
 
     def aaaa(ip_addresses)
-      record('AAAA', ip_addresses) do |ip_address|
-        raise "#{ip_address} is not a valid IPv6 address" unless IPAddress.valid_ipv6?(ip_address)
-        IPAddress(ip_address).compressed
-      end
+      record('AAAA', ip_addresses)
     end
 
     def a(ip_addresses)
-      record('A', ip_addresses) do |ip_address|
-        raise "#{ip_address} is not a valid IPv4 address" unless IPAddress.valid_ipv4?(ip_address)
-        IPAddress(ip_address).octets.join('.')
-      end
+      record('A', ip_addresses)
     end
 
     def cname(value)
-      value = String(value)
-      raise "CNAME #{value} cannot be defined for a naked domain" if @name == '@'
-      record('CNAME', value) do
-        @records = records.select { |other| !(other.type == 'CNAME' && other.name == @name) }
-        value
-      end
+      record('CNAME', value)
     end
 
     def mx(values)
@@ -73,24 +60,22 @@ module ProviderDSL
       record('TXT', values)
     end
 
-    def new_records
+    def new_or_changed_records
       records.select { |record| @original_records.select { |original| original == record }.count.zero? }
     end
 
     def removed_records
-      @original_records.select { |original| records.select { |record| original == record }.count.zero? }
+      @original_records.select do |original|
+        records.select { |record| original == record }.count.zero?
+      end
     end
 
     def changed?
-      !(new_records + removed_records).count.zero?
+      !(new_or_changed_records + removed_records).count.zero?
     end
 
     def to_s(prefix = '', suffix = '')
-      "#{prefix}#{sorted_records.join("#{suffix}\n#{prefix}")}#{suffix}"
-    end
-
-    def hash
-      sorted_records.map(&:hash)
+      "#{prefix}#{records.join("#{suffix}\n#{prefix}")}#{suffix}"
     end
 
     private
@@ -105,23 +90,25 @@ module ProviderDSL
       if keepers > 0
         raise "Keeper ? flag is inconsistently used for #{@name} #{type} #{values}" if keepers != 1 || values.count != 1
         @original_records.select { |original| original.name == @name && original.type == type }.each do |original|
-          add(original)
+          @records = add(@records, original)
         end
       else
-        values.each do |value|
-          value = yield(value) if block_given?
-          add(Record.new(@name, type, value, @ttl))
-        end
+        @records =
+          add(@records, Record.new(@name, type, values.map { |value| block_given? ? yield(value) : value }, @ttl))
       end
     end
 
-    def add(record)
+    def add(records, record)
       @logger.log("Adding #{record}")
-      @records = records.select { |other| !(record === other) } + [record]
-    end
-
-    def sorted_records
-      records.sort_by { |record| [record.name, record.type, record.value] }
+      values = record.values
+      records = records.select do |other|
+        match = record.same_name_and_type(other)
+        values = other.values + values if match
+        !match
+      end
+      values = values.last if record.type == 'CNAME'
+      records << Record.new(record.name, record.type, values, record.ttl)
+      records.sort_by { |sort| [sort.name, sort.type] }
     end
   end
 end

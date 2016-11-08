@@ -5,7 +5,7 @@ describe ProviderDSL::Zone do
   describe '#changed?' do
     it 'fails naked domain CNAME records' do
       zone = ProviderDSL::Zone.new([])
-      expect { zone.cname('x') }.to raise_exception 'CNAME x cannot be defined for a naked domain'
+      expect { zone.cname('x') }.to raise_exception 'Record 3600 @ CNAME ["x"] is invalid on the naked domain'
     end
     it 'builds valid zones' do
       zone = ProviderDSL::Zone.new([])
@@ -17,18 +17,18 @@ describe ProviderDSL::Zone do
       end
       expect(zone.changed?).to eq true
       expect(zone.records.count).to eq 2
-      expect(zone.new_records.count).to eq 2
+      expect(zone.new_or_changed_records.count).to eq 2
       expect(zone.removed_records.count).to eq 0
-      expect(zone.to_s).to eq "3600 @ A 1.2.3.4\n3600 sub A 1.1.1.1"
+      expect(zone.to_s).to eq "3600 @ A [\"1.2.3.4\"]\n3600 sub A [\"1.1.1.1\"]"
       zone = ProviderDSL::Zone.new(zone.records)
       zone.create do
         a '1.2.3.4'
       end
       expect(zone.changed?).to eq true
       expect(zone.records.count).to eq 1
-      expect(zone.new_records.count).to eq 0
+      expect(zone.new_or_changed_records.count).to eq 0
       expect(zone.removed_records.count).to eq 1
-      expect(zone.to_s).to eq '3600 @ A 1.2.3.4'
+      expect(zone.to_s).to eq '3600 @ A ["1.2.3.4"]'
       zone = ProviderDSL::Zone.new(zone.records)
       zone.create do
         a '1.2.3.4'
@@ -39,9 +39,9 @@ describe ProviderDSL::Zone do
       end
       expect(zone.changed?).to eq true
       expect(zone.records.count).to eq 2
-      expect(zone.new_records.count).to eq 1
+      expect(zone.new_or_changed_records.count).to eq 1
       expect(zone.removed_records.count).to eq 0
-      expect(zone.to_s).to eq "3600 @ A 1.2.3.4\n3600 sub CNAME b"
+      expect(zone.to_s).to eq "3600 @ A [\"1.2.3.4\"]\n3600 sub CNAME [\"b\"]"
       zone = ProviderDSL::Zone.new(zone.records)
       zone.create do
         a '1.2.3.4'
@@ -51,9 +51,9 @@ describe ProviderDSL::Zone do
       end
       expect(zone.changed?).to eq true
       expect(zone.records.count).to eq 2
-      expect(zone.new_records.count).to eq 1
+      expect(zone.new_or_changed_records.count).to eq 1
       expect(zone.removed_records.count).to eq 1
-      expect(zone.to_s).to eq "3600 @ A 1.2.3.4\n3600 sub CNAME a"
+      expect(zone.to_s).to eq "3600 @ A [\"1.2.3.4\"]\n3600 sub CNAME [\"a\"]"
       zone = ProviderDSL::Zone.new(zone.records)
       zone.create do
         ttl 600
@@ -65,9 +65,9 @@ describe ProviderDSL::Zone do
       end
       expect(zone.changed?).to eq true
       expect(zone.records.count).to eq 2
-      expect(zone.new_records.count).to eq 1
+      expect(zone.new_or_changed_records.count).to eq 1
       expect(zone.removed_records.count).to eq 1
-      expect(zone.to_s).to eq "600 @ A 1.2.3.4\n3600 sub CNAME a"
+      expect(zone.to_s).to eq "600 @ A [\"1.2.3.4\"]\n3600 sub CNAME [\"a\"]"
       zone = ProviderDSL::Zone.new(zone.records)
       zone.create do
         ttl 600
@@ -80,10 +80,10 @@ describe ProviderDSL::Zone do
         end
       end
       expect(zone.changed?).to eq true
-      expect(zone.records.count).to eq 3
-      expect(zone.new_records.count).to eq 1
-      expect(zone.removed_records.count).to eq 0
-      expect(zone.to_s).to eq "600 @ A 1.2.3.4\n600 @ A 2.3.4.5\n3600 sub CNAME a"
+      expect(zone.records.count).to eq 2
+      expect(zone.new_or_changed_records.count).to eq 1
+      expect(zone.removed_records.count).to eq 1
+      expect(zone.to_s).to eq "600 @ A [\"1.2.3.4\", \"2.3.4.5\"]\n3600 sub CNAME [\"a\"]"
       zone = ProviderDSL::Zone.new(zone.records)
       zone.create do
         ttl 600
@@ -95,10 +95,10 @@ describe ProviderDSL::Zone do
         end
       end
       expect(zone.changed?).to eq false
-      expect(zone.records.count).to eq 3
-      expect(zone.new_records.count).to eq 0
+      expect(zone.records.count).to eq 2
+      expect(zone.new_or_changed_records.count).to eq 0
       expect(zone.removed_records.count).to eq 0
-      expect(zone.to_s).to eq "600 @ A 1.2.3.4\n600 @ A 2.3.4.5\n3600 sub CNAME a"
+      expect(zone.to_s).to eq "600 @ A [\"1.2.3.4\", \"2.3.4.5\"]\n3600 sub CNAME [\"a\"]"
       zone = ProviderDSL::Zone.new(zone.records)
       zone.create do
         ttl 300
@@ -112,10 +112,10 @@ describe ProviderDSL::Zone do
         end
       end
       expect(zone.changed?).to eq true
-      expect(zone.records.count).to eq 4
-      expect(zone.new_records.count).to eq 1
+      expect(zone.records.count).to eq 3
+      expect(zone.new_or_changed_records.count).to eq 1
       expect(zone.removed_records.count).to eq 0
-      expect(zone.to_s).to eq "600 @ A 1.2.3.4\n600 @ A 2.3.4.5\n300 @ MX 10 smtp\n3600 sub CNAME a"
+      expect(zone.to_s).to eq "600 @ A [\"1.2.3.4\", \"2.3.4.5\"]\n300 @ MX [\"10 smtp\"]\n3600 sub CNAME [\"a\"]"
     end
   end
 end

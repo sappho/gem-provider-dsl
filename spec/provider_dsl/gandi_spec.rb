@@ -1,9 +1,9 @@
 require 'map'
 require 'spec_helper'
-require 'provider_dsl/gandi'
+require 'provider_dsl/gandi_provider'
 require 'provider_dsl/mocks/gandi_session'
 
-describe ProviderDSL::Gandi do
+describe ProviderDSL::GandiProvider do
   let(:domain_data_calls) do
     [
       {
@@ -27,10 +27,10 @@ describe ProviderDSL::Gandi do
       gandi_session = ProviderDSL::MockGandiSession.new(domain_data_calls)
       session_factory = double('ProviderDSL::GandiSessionFactory')
       allow(session_factory).to receive(:instance).and_return(gandi_session)
-      gandi = ProviderDSL::Gandi.new(
+      gandi = ProviderDSL::GandiProvider.new(
+        'LdlLQkOBFGYqZGzWYqbv9sWo',
         session_factory: session_factory,
-        domain_name: 'example.com',
-        api_key: 'LdlLQkOBFGYqZGzWYqbv9sWo'
+        domain_name: 'example.com'
       )
       expect(gandi.name_servers).to eq %w(a.dns.gandi.net b.dns.gandi.net c.dns.gandi.net)
       expect(domain_data_calls.count).to eq 0
@@ -46,10 +46,10 @@ describe ProviderDSL::Gandi do
       gandi_session = ProviderDSL::MockGandiSession.new(expected_calls)
       session_factory = double('ProviderDSL::GandiSessionFactory')
       allow(session_factory).to receive(:instance).and_return(gandi_session)
-      gandi = ProviderDSL::Gandi.new(
+      gandi = ProviderDSL::GandiProvider.new(
+        'LdlLQkOBFGYqZGzWYqbv9sWo',
         session_factory: session_factory,
-        domain_name: 'example.com',
-        api_key: 'LdlLQkOBFGYqZGzWYqbv9sWo'
+        domain_name: 'example.com'
       )
       gandi.name_servers!(%w(a.dns.gandi.net b.dns.gandi.net c.dns.gandi.net))
       expect(expected_calls.count).to eq 0
@@ -67,10 +67,10 @@ describe ProviderDSL::Gandi do
       gandi_session = ProviderDSL::MockGandiSession.new(expected_calls)
       session_factory = double('ProviderDSL::GandiSessionFactory')
       allow(session_factory).to receive(:instance).and_return(gandi_session)
-      gandi = ProviderDSL::Gandi.new(
+      gandi = ProviderDSL::GandiProvider.new(
+        'LdlLQkOBFGYqZGzWYqbv9sWo',
         session_factory: session_factory,
-        domain_name: 'example.com',
-        api_key: 'LdlLQkOBFGYqZGzWYqbv9sWo'
+        domain_name: 'example.com'
       )
       gandi.name_server_addresses!('test1', '1.2.3.4')
       expect(expected_calls.count).to eq 0

@@ -1,5 +1,5 @@
 Metrics/AbcSize:
-  Max: 55
+  Max: 70
 
 Metrics/CyclomaticComplexity:
   Max: 10
@@ -8,7 +8,7 @@ Metrics/LineLength:
   Max: 120
 
 Metrics/MethodLength:
-  Max: 30
+  Max: 50
 
 Metrics/PerceivedComplexity:
   Max: 15
