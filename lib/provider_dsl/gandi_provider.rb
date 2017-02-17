@@ -103,9 +103,10 @@ module ProviderDSL
     end
 
     def mail_redirections!(new_redirections)
+      new_redirections =
+        new_redirections.map { |source, destinations| [source.to_s, Array(destinations).uniq.sort] }.to_h
       current_redirections = mail_redirections
       new_redirections.each do |source, new_destinations|
-        new_destinations = Array(new_destinations).uniq.sort
         if current_redirections.key?(source)
           current_destinations = current_redirections[source].uniq.sort
           next if new_destinations == current_destinations
