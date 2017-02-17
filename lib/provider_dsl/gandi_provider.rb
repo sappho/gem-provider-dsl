@@ -97,5 +97,30 @@ module ProviderDSL
       @logger.log((["Setting name servers for Gandi domain #{@domain_name} to:"] + @name_servers).join("\n  "))
       @session.domain.nameservers.set(@domain_name, @name_servers)
     end
+
+    def mail_redirections
+      Hash[@session.domain.forward.list(@domain_name).map { |data| [data['source'], data['destinations'].uniq.sort] }]
+    end
+
+    def mail_redirections!(new_redirections)
+      current_redirections = mail_redirections
+      new_redirections.each do |source, new_destinations|
+        new_destinations = Array(new_destinations).uniq.sort
+        if current_redirections.key?(source)
+          current_destinations = current_redirections[source].uniq.sort
+          next if new_destinations == current_destinations
+          @logger.log((["Updating #{@domain_name} mail forwarder for #{source}:"] + new_destinations).join("\n  "))
+          @session.domain.forward.update(@domain_name, source, destinations: new_destinations)
+        else
+          @logger.log((["Creating #{@domain_name} mail forwarder for #{source}:"] + new_destinations).join("\n  "))
+          @session.domain.forward.create(@domain_name, source, destinations: new_destinations)
+        end
+      end
+      current_redirections.each do |source, _|
+        next if new_redirections.key?(source)
+        @logger.log("Deleting #{@domain_name} mail forwarder for #{source}")
+        @session.domain.forward.delete(@domain_name, source)
+      end
+    end
   end
 end
